@@ -1,19 +1,19 @@
 'use strict'
 
 const crypto = require('crypto')
-const debug = require('debug')('minecraft-protocol')
+// const debug = require('debug')('minecraft-protocol')
 const yggdrasil = require('yggdrasil')
 
 module.exports = function (client, options) {
   const yggdrasilServer = yggdrasil.server({ agent: options.agent, host: options.sessionServer || 'https://sessionserver.mojang.com' })
   client.once('encryption_begin', onEncryptionKeyRequest)
 
-  function onEncryptionKeyRequest (packet) {
+  function onEncryptionKeyRequest(packet) {
     crypto.randomBytes(16, gotSharedSecret)
 
-    function gotSharedSecret (err, sharedSecret) {
+    function gotSharedSecret(err, sharedSecret) {
       if (err) {
-        debug(err)
+        // debug(err)
         client.emit('error', err)
         client.end()
         return
@@ -21,13 +21,13 @@ module.exports = function (client, options) {
       if (options.haveCredentials) {
         joinServerRequest(onJoinServerResponse)
       } else {
-        if (packet.serverId !== '-') {
-          debug('This server appears to be an online server and you are providing no password, the authentication will probably fail')
-        }
+        // if (packet.serverId !== '-') {
+        //   debug('This server appears to be an online server and you are providing no password, the authentication will probably fail')
+        // }
         sendEncryptionKeyResponse()
       }
 
-      function onJoinServerResponse (err) {
+      function onJoinServerResponse(err) {
         if (err) {
           client.emit('error', err)
           client.end()
@@ -36,12 +36,12 @@ module.exports = function (client, options) {
         }
       }
 
-      function joinServerRequest (cb) {
+      function joinServerRequest(cb) {
         yggdrasilServer.join(options.accessToken, client.session.selectedProfile.id,
           packet.serverId, sharedSecret, packet.publicKey, cb)
       }
 
-      function sendEncryptionKeyResponse () {
+      function sendEncryptionKeyResponse() {
         const pubKey = mcPubKeyToPem(packet.publicKey)
         const encryptedSharedSecretBuffer = crypto.publicEncrypt({ key: pubKey, padding: crypto.constants.RSA_PKCS1_PADDING }, sharedSecret)
         const encryptedVerifyTokenBuffer = crypto.publicEncrypt({ key: pubKey, padding: crypto.constants.RSA_PKCS1_PADDING }, packet.verifyToken)
@@ -55,7 +55,7 @@ module.exports = function (client, options) {
   }
 }
 
-function mcPubKeyToPem (mcPubKeyBuffer) {
+function mcPubKeyToPem(mcPubKeyBuffer) {
   let pem = '-----BEGIN PUBLIC KEY-----\n'
   let base64PubKey = mcPubKeyBuffer.toString('base64')
   const maxLineLength = 65

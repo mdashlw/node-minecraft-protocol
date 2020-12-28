@@ -1,6 +1,6 @@
 const ProtoDef = require('protodef').ProtoDef
 const minecraft = require('../datatypes/minecraft')
-const debug = require('debug')('minecraft-protocol')
+// const debug = require('debug')('minecraft-protocol')
 
 module.exports = function (client, options) {
   const mcdata = require('minecraft-data')(options.version || require('../version').defaultVersion)
@@ -21,7 +21,7 @@ module.exports = function (client, options) {
     client.on('login_plugin_request', onLoginPluginRequest)
   }
 
-  function registerChannel (name, parser, custom) {
+  function registerChannel(name, parser, custom) {
     if (custom) {
       client.writeChannel('REGISTER', name)
     }
@@ -30,7 +30,7 @@ module.exports = function (client, options) {
     if (channels.length === 1) { client.on('custom_payload', onCustomPayload) }
   }
 
-  function unregisterChannel (channel, custom) {
+  function unregisterChannel(channel, custom) {
     if (custom) {
       client.writeChannel('UNREGISTER', channel)
     }
@@ -44,32 +44,32 @@ module.exports = function (client, options) {
     }
   }
 
-  function onCustomPayload (packet) {
+  function onCustomPayload(packet) {
     const channel = channels.find(function (channel) {
       return channel === packet.channel
     })
     if (channel) {
       if (proto.types[channel]) { packet.data = proto.parsePacketBuffer(channel, packet.data).data }
-      debug('read custom payload ' + channel + ' ' + packet.data)
+      // debug('read custom payload ' + channel + ' ' + packet.data)
       client.emit(channel, packet.data)
     }
   }
 
-  function onLoginPluginRequest (packet) {
+  function onLoginPluginRequest(packet) {
     client.write('login_plugin_response', { // write that login plugin request is not understood, just like the Notchian client
       messageId: packet.messageId
     })
   }
 
-  function writeChannel (channel, params) {
-    debug('write custom payload ' + channel + ' ' + params)
+  function writeChannel(channel, params) {
+    // debug('write custom payload ' + channel + ' ' + params)
     client.write('custom_payload', {
       channel: channel,
       data: proto.createPacketBuffer(channel, params)
     })
   }
 
-  function readDumbArr (buf, offset) {
+  function readDumbArr(buf, offset) {
     const ret = {
       value: [],
       size: 0
@@ -84,7 +84,7 @@ module.exports = function (client, options) {
     return ret
   }
 
-  function writeDumbArr (value, buf, offset) {
+  function writeDumbArr(value, buf, offset) {
     // TODO: Remove trailing \0
     value.forEach(function (v) {
       offset += this.write(v, buf, offset, 'cstring', {})
@@ -92,7 +92,7 @@ module.exports = function (client, options) {
     return offset
   }
 
-  function sizeOfDumbArr (value) {
+  function sizeOfDumbArr(value) {
     return value.reduce((acc, v) => acc + this.sizeOf(v, 'cstring', {}), 0)
   }
 }

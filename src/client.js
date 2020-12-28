@@ -1,7 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events').EventEmitter
-const debug = require('debug')('minecraft-protocol')
+// const debug = require('debug')('minecraft-protocol')
 const compression = require('./transforms/compression')
 const framing = require('./transforms/framing')
 const states = require('./states')
@@ -14,7 +14,7 @@ const createDecipher = require('./transforms/encryption').createDecipher
 const closeTimeout = 30 * 1000
 
 class Client extends EventEmitter {
-  constructor (isServer, version, customPackets, hideErrors = false) {
+  constructor(isServer, version, customPackets, hideErrors = false) {
     super()
     this.customPackets = customPackets
     this.version = version
@@ -34,18 +34,18 @@ class Client extends EventEmitter {
     this.state = states.HANDSHAKING
   }
 
-  get state () {
+  get state() {
     return this.protocolState
   }
 
-  setSerializer (state) {
+  setSerializer(state) {
     this.serializer = createSerializer({ isServer: this.isServer, version: this.version, state: state, customPackets: this.customPackets })
     this.deserializer = createDeserializer({
       isServer: this.isServer,
       version: this.version,
       state: state,
       packetsToParse:
-      this.packetsToParse,
+        this.packetsToParse,
       customPackets: this.customPackets,
       noErrorLogging: this.hideErrors
     })
@@ -94,7 +94,7 @@ class Client extends EventEmitter {
     })
   }
 
-  set state (newProperty) {
+  set state(newProperty) {
     const oldProperty = this.protocolState
     this.protocolState = newProperty
 
@@ -123,15 +123,15 @@ class Client extends EventEmitter {
     this.emit('state', newProperty, oldProperty)
   }
 
-  get compressionThreshold () {
+  get compressionThreshold() {
     return this.compressor == null ? -2 : this.compressor.compressionThreshold
   }
 
-  set compressionThreshold (threshold) {
+  set compressionThreshold(threshold) {
     this.setCompressionThreshold(threshold)
   }
 
-  setSocket (socket) {
+  setSocket(socket) {
     this.ended = false
 
     // TODO : A lot of other things needs to be done.
@@ -169,7 +169,7 @@ class Client extends EventEmitter {
     this.framer.pipe(this.socket)
   }
 
-  end (reason) {
+  end(reason) {
     this._endReason = reason
     /* ending the serializer will end the whole chain
     serializer -> framer -> socket -> splitter -> deserializer */
@@ -186,7 +186,7 @@ class Client extends EventEmitter {
     }
   }
 
-  setEncryption (sharedSecret) {
+  setEncryption(sharedSecret) {
     if (this.cipher != null) { this.emit('error', new Error('Set encryption twice!')) }
     this.cipher = createCipher(sharedSecret)
     this.cipher.on('error', (err) => this.emit('error', err))
@@ -198,7 +198,7 @@ class Client extends EventEmitter {
     this.socket.pipe(this.decipher).pipe(this.splitter)
   }
 
-  setCompressionThreshold (threshold) {
+  setCompressionThreshold(threshold) {
     if (this.compressor == null) {
       this.compressor = compression.createCompressor(threshold)
       this.compressor.on('error', (err) => this.emit('error', err))
@@ -214,21 +214,21 @@ class Client extends EventEmitter {
     }
   }
 
-  write (name, params) {
+  write(name, params) {
     if (!this.serializer.writable) { return }
     //debug('writing packet ' + this.state + '.' + name)
     //debug(params)
     this.serializer.write({ name, params })
   }
 
-  writeRaw (buffer) {
+  writeRaw(buffer) {
     const stream = this.compressor === null ? this.framer : this.compressor
     if (!stream.writable) { return }
     stream.write(buffer)
   }
 
   // TCP/IP-specific (not generic Stream) method for backwards-compatibility
-  connect (port, host) {
+  connect(port, host) {
     const options = { port, host }
     if (!this.options) this.options = options
     require('./client/tcp_dns')(this, options)

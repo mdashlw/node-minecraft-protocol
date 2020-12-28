@@ -1,20 +1,20 @@
 'use strict'
 
 const ping = require('../ping')
-const debug = require('debug')('minecraft-protocol')
+// const debug = require('debug')('minecraft-protocol')
 const states = require('../states')
 const minecraftData = require('minecraft-data')
 
 module.exports = function (client, options) {
   client.wait_connect = true // don't let src/client/setProtocol proceed on socket 'connect' until 'connect_allowed'
-  debug('pinging', options.host)
+  // debug('pinging', options.host)
   // TODO: use 0xfe ping instead for better compatibility/performance? https://github.com/deathcap/node-minecraft-ping
   ping(options, function (err, response) {
     if (err) { return client.emit('error', err) }
-    debug('ping response', response)
+    // debug('ping response', response)
     // TODO: could also use ping pre-connect to save description, type, max players, etc.
     const motd = response.description
-    debug('Server description:', motd) // TODO: save
+    // debug('Server description:', motd) // TODO: save
 
     // Pass server-reported version to protocol handler
     // The version string is interpreted by https://github.com/PrismarineJS/node-minecraft-data
@@ -33,7 +33,7 @@ module.exports = function (client, options) {
     }
     const minecraftVersion = versions[0].minecraftVersion
 
-    debug(`Server version: ${minecraftVersion}, protocol: ${protocolVersion}`)
+    // debug(`Server version: ${minecraftVersion}, protocol: ${protocolVersion}`)
 
     options.version = minecraftVersion
     options.protocolVersion = protocolVersion
